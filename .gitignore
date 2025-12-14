@@ -43,8 +43,11 @@
 *.ptf.*
 *.qar
 *.qarlog
+*.qpf
+*.qsf
 *.qws
 *.rpt
+*.sld
 *.smsg
 *.sof
 *.sopc_builder
@@ -54,7 +57,20 @@
 *~
 *example*
 *sopc_*
+*.wlf
+transcript
 # *.sdc # I want those timing files
+
+
+# ignore vsim generated files
+*.wlf
+test_bench.v
+test_bench_control_unit.v
+
+
+# ignore vsim generated folders
+*/work/
+
 
 # ignore Quartus II generated folders
 */db/
