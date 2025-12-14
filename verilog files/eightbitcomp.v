@@ -35,9 +35,10 @@ wire rst,sdram_load;
 assign rst= ~rst_b;
 assign sdram_load= ~sdram_load_b;
 
-reg [7:0] data_bus,addr_bus;
+wire [7:0] data_bus,addr_bus;
 
-assign led=show_addr_bus?addr_bus:data_bus;
+//assign led=show_addr_bus?addr_bus:data_bus;
+mux_sel1b #(.size(8)) MUX_SHOW_DATA_ADDR_BUS(.o(led),.sel(show_addr_bus),.value1(addr_bus),.value0(data_bus));
 
 //Semnal de tact si semnal invers de tact pt unitatea de control
 wire comp_clk,comp_clk_b;
@@ -136,11 +137,21 @@ sdram_input #(.dataWriteChunk(8)) SDRAM_INPUT
 wire sdram_write,sdram_read;
 wire [7:0] sdram_write_address,sdram_read_address;
 wire [15:0] sdram_data_write;
-assign sdram_write_address= prog?sdram_input_write_address:mem_addr_register_output;
-assign sdram_read_address= prog?write_data:mem_addr_register_output;
-assign sdram_data_write= prog?sdram_input_write_data:{data_bus,addr_bus};
-assign sdram_write= prog?sdram_input_write_signal:ri;
-assign sdram_read= prog?sdram_input_read_signal:ro;
+
+//assign sdram_write_address= prog?sdram_input_write_address:mem_addr_register_output;
+mux_sel1b #(.size(8)) MUX_WRITE_ADDR(.o(sdram_write_address),.sel(prog),.value1(sdram_input_write_address),.value0(mem_addr_register_output));
+
+//assign sdram_read_address= prog?write_data:mem_addr_register_output;
+mux_sel1b #(.size(8)) MUX_READ_ADDR(.o(sdram_read_address),.sel(prog),.value1(write_data),.value0(mem_addr_register_output));
+
+//assign sdram_data_write= prog?sdram_input_write_data:{data_bus,addr_bus};
+mux_sel1b #(.size(16)) MUX_DATA_WRITE(.o(sdram_data_write),.sel(prog),.value1(sdram_input_write_data),.value0({data_bus,addr_bus}));
+
+//assign sdram_write= prog?sdram_input_write_signal:ri;
+mux_sel1b #(.size(1)) MUX_WRITE(.o(sdram_write),.sel(prog),.value1(sdram_input_write_signal),.value0(ri));
+
+//assign sdram_read= prog?sdram_input_read_signal:ro;
+mux_sel1b #(.size(1)) MUX_READ(.o(sdram_read),.sel(prog),.value1(sdram_input_read_signal),.value0(ro));
 
 sdram SDRAM
 (
@@ -207,7 +218,7 @@ decimalDisplay DISPLAY
 );
 
 //Data Bus multiplexor
-always @(*)
+/*always @(*)
 begin
 	if(prog)
 		data_bus=sdram_output[15:8];
@@ -222,9 +233,20 @@ begin
 	else 
 		data_bus=8'b00000000;
 end
+*/
+conditional_mux #(.conditions(5),.size(8)) DATA_BUS_MULTIPLEXOR
+(
+	.cond({prog,ro,io,ao,so}),
+	.then
+	(
+	{sdram_output[15:8],sdram_output[15:8],instr_register_output[15:8],a_register_output,alu_output,8'b00000000}
+	),
+	.o(data_bus)
+);
+
 
 //Address Bus multiplexor
-always @(*)
+/*always @(*)
 begin
 	if(prog)
 		addr_bus=sdram_output[7:0];
@@ -237,5 +259,15 @@ begin
 	else 
 		addr_bus=8'b00000000;
 end
+*/
+conditional_mux #(.conditions(4),.size(8)) ADDR_BUS_MULTIPLEXOR
+(
+	.cond({prog,ro,io,co}),
+	.then
+	(
+	{sdram_output[7:0],sdram_output[7:0],instr_register_output[7:0],prog_counter_output,8'b00000000}
+	),
+	.o(addr_bus)
+);
 
 endmodule
