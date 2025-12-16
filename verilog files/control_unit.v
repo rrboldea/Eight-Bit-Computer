@@ -9,7 +9,8 @@ module control_unit
 localparam lda_instruction=8'b00000001;
 localparam add_instruction=8'b00000010;
 localparam sub_instruction=8'b10000010;
-localparam out_instruction=8'b00000011;
+localparam jmp_instruction=8'b00000011;
+localparam out_instruction=8'b11111110;
 localparam hlt_instruction=8'b11111111;
 
 /*============ STATES ============*/
@@ -27,8 +28,10 @@ localparam add2=10'b0000001010;
 localparam sub0=10'b1000001000;
 localparam sub1=10'b1000001001;
 localparam sub2=10'b1000001010;
+//jmp state
+localparam jmp0=10'b0000001100;
 //out state
-localparam out0=10'b0000001100;
+localparam out0=10'b1111111000;
 //hlt state
 localparam hlt0=10'b1111111100;
 
@@ -43,6 +46,7 @@ begin
 		fetch1: if(instruction==lda_instruction) next_state=lda0;
 			else if(instruction==add_instruction) next_state=add0;
 			else if(instruction==sub_instruction) next_state=sub0;
+			else if(instruction==jmp_instruction) next_state=jmp0;
 			else if(instruction==out_instruction) next_state=out0;
 			else if(instruction==hlt_instruction) next_state=hlt0;
 			else next_state=fetch0;
@@ -54,6 +58,7 @@ begin
 		sub0: next_state=sub1;
 		sub1: next_state=sub2;
 		sub2: next_state=fetch0;
+		jmp0: next_state=fetch0;
 		out0: next_state=fetch0;
 		hlt0: next_state=fetch0;
 	endcase
@@ -80,6 +85,9 @@ begin
 		sub0: {hlt,mi,ri,ro,ii,io,ai,ao,so,su,bi,oi,ce,co,j,fi}=16'b0100010000000000;
 		sub1: {hlt,mi,ri,ro,ii,io,ai,ao,so,su,bi,oi,ce,co,j,fi}=16'b0001000000100000;
 		sub2: {hlt,mi,ri,ro,ii,io,ai,ao,so,su,bi,oi,ce,co,j,fi}=16'b0000001011000000;
+		//IMPORTANT! nu da counterul jump fara countEnable activat 
+		//fixez asta??
+		jmp0: {hlt,mi,ri,ro,ii,io,ai,ao,so,su,bi,oi,ce,co,j,fi}=16'b0000010000001010;
 		out0: {hlt,mi,ri,ro,ii,io,ai,ao,so,su,bi,oi,ce,co,j,fi}=16'b0000000100010000;
 		hlt0: {hlt,mi,ri,ro,ii,io,ai,ao,so,su,bi,oi,ce,co,j,fi}=16'b1000000000000000;
 	endcase
