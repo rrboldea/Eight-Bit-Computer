@@ -58,7 +58,8 @@ wire [7:0] prog_counter_output;
 //Conexiuni la data_bus( [15:8] ) si addr_bus( [7:0] )
 wire [15:0] sdram_output,instr_register_output;
 
-clock #(.size(7)) CLOCK
+//Clock frquency divider by 2^8 for the sdram to have enough time to read and write => 195khz
+clock #(.size(8)) CLOCK
 (
 	.clk_in(clk),
 	.rst(rst),
