@@ -33,7 +33,7 @@ module segment7DecimalDecoder
   assign aux[5]=(c[1] & c[0]) | (min0 & c[0]) | min5;
   assign aux[6]=min1 | min6;
   
-  assign offCondition= ~aux[0] & ~aux[1] & ~aux[2] & ~aux[3] & ~aux[4] & ~aux[5] & rippleOff_in;
+  assign offCondition= ~aux[0] & ~aux[1] & ~aux[2] & ~aux[3] & ~aux[4] & ~aux[5] & aux[6] & rippleOff_in;
 
 mux_sel1b #(.size(8)) mux
 (
